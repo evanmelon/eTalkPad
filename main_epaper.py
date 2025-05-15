@@ -12,16 +12,18 @@ from PIL import Image,ImageDraw,ImageFont
 import traceback
 from pet import Cat, PetCanvas
 from display_manager import EpaperDisplayManager
-from text_chatgpt import chat_with_gpt
+from text_chatgpt import TextChatGPT
 
 
+# main entry point
 if __name__ == "__main__":
     cat = Cat()
     epd = EpaperDisplayManager()
+    chatbot = TextChatGPT()
     # 一開始建 base canvas（含貓咪）
     base_canvas = PetCanvas()
     base_canvas.add(cat)
-    base_canvas.add(cat.say(chat_with_gpt("你好～")))
+    base_canvas.add(cat.say(chatbot.get_response("你好～")))
     base_canvas.render_all()
     epd.display_base(base_canvas.canvas)  # 設定成 partial update 的 base
 
@@ -44,7 +46,7 @@ if __name__ == "__main__":
             print("👋 再見！")
             break
 
-        reply = chat_with_gpt(user_input)
+        reply = chatbot.get_response(user_input)
         # 建立新的 canvas 只放文字
         canvas = PetCanvas()
         canvas.add(cat)

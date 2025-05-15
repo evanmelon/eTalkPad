@@ -1,34 +1,44 @@
 import os
-import openai
 from openai import OpenAI
-
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# ====== 設定 OpenAI API 金鑰 ======
-client = OpenAI(api_key=os.getenv("API_KEY"))
+class TextChatGPT:
+    """
+    A simple wrapper for OpenAI's Chat API that maintains conversation history.
+    """
 
-def chat_with_gpt(user_input):
-    response = client.chat.completions.create(
-        model="gpt-4",  # 有用 GPT-4 可換成 "gpt-4"
-        messages=[
-            {"role": "system", "content": "你是一個友善的助理。你在輸出文字時要在開頭加上這串文字的心情，依據對照表輸出右邊的文字，打完文字後使用：去做分隔心情和文字。開心-happy, 生氣-mad, 難過-sad"},
-            {"role": "user", "content": user_input}
-        ]
-    )
-    return response.choices[0].message.content
+    def __init__(self, api_key=None, model="gpt-4", system_prompt=None):
+        self.api_key = api_key or os.getenv("API_KEY")
+        if not self.api_key:
+            raise ValueError(
+                "API key must be provided via constructor or API_KEY environment variable"
+            )
+        self.client = OpenAI(api_key=self.api_key)
+        self.model = model
+        self.system_prompt = system_prompt or (
+            "你是一個友善的助理。"
+            "你在輸出文字時要在開頭加上這串文字的心情，依據對照表輸出右邊的文字，"
+            "一開始使用：去做分隔心情和文字。happy, mad, sad"
+        )
+        self.messages = [{"role": "system", "content": self.system_prompt}]
 
-# def main():
-#     print("💬 ChatGPT CLI 模式（輸入 q 結束）")
-#     while True:
-#         user_input = input("你說：")
-#         if user_input.lower() == 'q':
-#             print("👋 再見！")
-#             break
-#         reply = chat_with_gpt(user_input)
-#         print("🤖 ChatGPT 回應：", reply)
-# 
-# if __name__ == "__main__":
-#     main()
+    def get_response(self, user_input):
+        """
+        Send a user message, update history, call API, and return assistant response.
+        """
+        self.messages.append({"role": "user", "content": user_input})
+        response = self.client.chat.completions.create(
+            model=self.model,
+            messages=self.messages,
+        )
+        content = response.choices[0].message.content
+        self.messages.append({"role": "assistant", "content": content})
+        return content
 
+    def reset_conversation(self):
+        """
+        Clear the conversation history, keeping only the system prompt.
+        """
+        self.messages = [{"role": "system", "content": self.system_prompt}]
