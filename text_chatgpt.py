@@ -19,8 +19,7 @@ class TextChatGPT:
         self.model = model
         self.system_prompt = system_prompt or (
             "你是一個友善的助理。"
-            "你在輸出文字時要在開頭加上這串文字的心情，依據對照表輸出右邊的文字，"
-            "一開始使用：去做分隔心情和文字。happy, mad, sad"
+            "你在輸出文字時要在一開始加上這串文字的心情，心情可以用happy, angry, sad 這三個心情狀態來表示，打完心情後用：來區隔你要講的文字"
         )
         self.messages = [{"role": "system", "content": self.system_prompt}]
 
